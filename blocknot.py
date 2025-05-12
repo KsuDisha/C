@@ -108,7 +108,6 @@ def save_file():
     filename_entry = Entry(save_window, font=("Arial", 12), width=40)
     filename_entry.pack(pady=5)
     Button(save_window, text="Сохранить", command=save_as_filename).pack(pady=10)
-    Button(save_window, text="Отмена", command=save_window.destroy).pack(pady=5)
 
     save_window.update_idletasks()
     center_window(save_window)
@@ -137,19 +136,56 @@ def paste_text():
     text_area.insert(INSERT, form1.clipboard_get())
 
 def show_params():
-    messagebox.showinfo("Параметры", "Настройки пока не реализованы")
+    def apply_key():
+        try:
+            new_key = int(entry.get())
+            save_config(str(new_key))
+            param_window.destroy()
+            messagebox.showinfo("Успешно", f"Ключ установлен: {new_key}")
+        except ValueError:
+            messagebox.showerror("Ошибка", "Введите корректный числовой ключ.")
+
+    def generate_key():
+        gen_key = generate_large_prime()
+        entry.delete(0, END)
+        entry.insert(0, str(gen_key))
+
+    def save_config(new_key):
+        config_path = os.path.join(os.path.dirname(__file__), "AmTCD.ini")
+        config = configparser.ConfigParser()
+        config['main'] = {'keyuser': new_key}
+        with open(config_path, 'w') as configfile:
+            config.write(configfile)
+
+    current_key = get_user_key()
+
+    param_window = Toplevel(form1)
+    param_window.title("Параметры — ключ шифрования")
+    param_window.minsize(400, 200)
+
+    Label(param_window, text="Ваш текущий ключ пользователя:").pack(pady=(10, 0))
+    Label(param_window, text=current_key, fg="blue").pack(pady=(0, 10))
+
+    Label(param_window, text="Введите новый ключ (или сгенерируйте):").pack()
+    entry = Entry(param_window, font=("Arial", 12), width=40)
+    entry.pack(pady=5)
+
+    Button(param_window, text="Сгенерировать случайный ключ", command=generate_key).pack(pady=5)
+    Button(param_window, text="Сохранить ключ", command=apply_key).pack(pady=5)
+
+    param_window.update_idletasks()
+    center_window(param_window)
 
 def show_help():
     help_window = Toplevel(form1)
     help_window.title("Справка")
     Label(help_window, text="Приложение с графическим интерфейсом 'Блокнот'.\nПозволяет: создавать / открывать / сохранять зашифрованный текстовый файл, \nпредусмотрены ввод и сохранение личного ключа, \nвывод немодальной формы 'Справка', вывод модальной формы 'О программе'.", wraplength=400, font=('Arial', 12)).pack(padx=10, pady=10)
     Button(help_window, text="Закрыть", command=help_window.destroy).pack(pady=10)
-
     help_window.update_idletasks()
     center_window(help_window)
 
 def show_about():
-    messagebox.showinfo("О программе", "Программа для 'прозрачного шифрования' \n(с) Тарелкина Ксения Сергеевна, БИСО-03-23.\nСпасибо моим родителям: Сергею Владимировичу и Светлане Владимировне!")
+    messagebox.showinfo("О программе", "Программа для 'прозрачного шифрования' \n(с) Тарелкина Ксения Сергеевна, БИСО-03-23.\nСпасибо моим родителям: Сергею Владимировичу и Светлане Владимировне за воспитание!")
 
 form1 = Tk()
 form1.title("Блокнот")
@@ -210,3 +246,4 @@ form1.bind_all("<Control-c>", lambda event: copy_text())
 form1.bind_all("<Control-v>", lambda event: paste_text())
 
 form1.mainloop()
+
